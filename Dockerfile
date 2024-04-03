@@ -18,14 +18,14 @@ COPY --chown=elastic:elastic git/elasticsearch/ /home/elastic/git/elasticsearch/
 RUN cd /home/elastic/git/elasticsearch && ./gradlew localDistro
 
 # dirty code - sue me
-RUN cp -R $(ls -dt /git/elasticsearch/build/distribution/local/elasticsearch-* | head -n 1)  /home/elastic/elasticsearch; cd /home/elastic; PATH=/home/elastic/git/elasticsearch/build/local/$(ls)bin:$PATH && export PATH; 
+RUN cp -R $(ls -dt /git/elasticsearch/build/distribution/local/elasticsearch-* | head -n 1)  /home/elastic/elasticsearch; cd /home/elastic/git/elasticsearch/build/local; PATH=$(ls)/bin:$PATH && export PATH; 
 
 
 EXPOSE 9300 9200
 
-# Runs elastic on start, not entrypoint so that you can specify if you want to just run the container with without automatically starting elasticsearch
-CMD $(ls -dt /home/elastic/git/elasticsearch/build/distribution/local/elasticsearch-* | head -n 1)/bin/elasticsearch
 
-CMD /bin/sh -c 'sleep infinity'
+#Doesn't run elastic on start
+CMD elasticsearch
+CMD sleep infinity
 
 
