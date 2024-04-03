@@ -13,5 +13,5 @@ else
 fi
 
 
-sudo docker build --progress=plain -t elasticsearch_source:v1 -f Dockerfile .
+sudo docker build --progress=plain -t elasticsearch_source:local -f Dockerfile .
 

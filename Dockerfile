@@ -6,24 +6,26 @@ RUN apt update && apt install  -y --no-install-recommends openjdk-17-jre-headles
 #--repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
 #elasticsearch doesn't like being used as root
-RUN useradd -ms /bin/bash elastic
+RUN useradd -ms /bin/bash elastic; su elastic
 
 USER elastic
 
-RUN cd /home/elastic
-
-RUN mkdir -p git/elasticsearch
+RUN mkdir -p /home/elastic/git/elasticsearch
 
 #RUN git clone --progress --verbose https://github.com/elastic/elasticsearch.git git/elasticsearch - faster for me to just git in the local dir, then clone if multiple attempts to build Dockerfile
-COPY git/elasticsearch git/elasticsearch
+COPY --chown=elastic:elastic git/elasticsearch/ /home/elastic/git/elasticsearch/ 
 
-RUN cd git/elasticsearch && ./gradlew localDistro
+RUN cd /home/elastic/git/elasticsearch && ./gradlew localDistro
 
-RUN cp -R $(ls -dt /git/elasticsearch/build/distribution/local/elasticsearch-* | head -n 1)  /home/elastic/elasticsearch; cd /home/elastic; PATH=/home/elastic/elasticsearch/bin:$PATH && export PATH; 
+# dirty code - sue me
+RUN cp -R $(ls -dt /git/elasticsearch/build/distribution/local/elasticsearch-* | head -n 1)  /home/elastic/elasticsearch; cd /home/elastic; PATH=/home/elastic/git/elasticsearch/build/local/$(ls)bin:$PATH && export PATH; 
 
-ENTRYPOINT ["elasticsearch"]
 
 EXPOSE 9300 9200
-#default params for elasticsearch, can be overran with docker run <image> <some_params>
+
+# Runs elastic on start, not entrypoint so that you can specify if you want to just run the container with without automatically starting elasticsearch
+CMD $(ls -dt /home/elastic/git/elasticsearch/build/distribution/local/elasticsearch-* | head -n 1)/bin/elasticsearch
+
 CMD /bin/sh -c 'sleep infinity'
+
 
